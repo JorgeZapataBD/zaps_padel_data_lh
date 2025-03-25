@@ -1,0 +1,4 @@
+# Common tools dependencies
+git+ssh://git@github.com/JorgeZapataBD/zaps_common_tools.git@${ZAPS_CORE_ENVIRONMENT}
+pypdf==5.4.0
+regex==2024.11.6

@@ -1,0 +1,43 @@
+name: Sync Zaps Padel To Zaps Core Repository
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'plugins/zaps_padel/**'
+      - 'dags/zaps_padel/**'
+
+jobs:
+  sync2zaps_core:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Create user agent
+        uses: webfactory/ssh-agent@v0.6.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.GIT_PRIVATE_KEY }}
+      - name: Clone the target repository
+        run: |
+          git clone --single-branch --branch ${{ github.ref_name }} git@github.com:JorgeZapataBD/zaps_core_airflow.git zaps_core_airflow
+
+      - name: Copy modified files to the target repo
+        run: |
+          rsync -av --delete --relative plugins/zaps_padel dags/zaps_padel zaps_core_airflow/
+
+      - name: Commit and push to target repo
+        run: |
+          cd zaps_core_airflow
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Update files from source zaps padel repo"
+          git push origin ${{ github.ref_name }}
