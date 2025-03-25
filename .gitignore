@@ -172,3 +172,11 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Project configuration
+*gcp_credentials.json
+.user.yml
+dbt_packages
+package-lock.yml
+.ssh
+logs
