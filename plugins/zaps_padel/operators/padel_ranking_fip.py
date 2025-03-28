@@ -10,14 +10,14 @@ from pypdf import PdfReader
 from zaps_core.clients.firestore_client import FirestoreClient
 from zaps_core.clients.gcs_client import GCSClient
 
-from plugins.zaps_padel.utils.utils_fip_ranking import (
-    download_fip_ranking_file, format_fip_ranking_header,
-    get_fip_ranking_pattern, get_mondays_list)
+from plugins.zaps_padel.utils.utils_ranking_fip import (
+    download_ranking_fip_file, format_ranking_fip_header, get_mondays_list,
+    get_ranking_fip_pattern)
 
 logger = logging.getLogger(__name__)
 
 
-def operator_get_fip_ranking_files2gcs(
+def operator_get_ranking_fip_files2gcs(
     gcp_project_id: str,
     gcp_conn_id: str,
     gcs_bucket: str,
@@ -57,7 +57,7 @@ def operator_get_fip_ranking_files2gcs(
         for d_date in dates_list:
             # If no file is found for a date, continue and mark the date (not all weeks update the ranking)
             try:
-                source_file = download_fip_ranking_file(d_date, fip_category)
+                source_file = download_ranking_fip_file(d_date, fip_category)
             except requests.exceptions.HTTPError as e:
                 if e.response.status_code == 404:
                     logger.warning(
@@ -87,7 +87,7 @@ def operator_get_fip_ranking_files2gcs(
     return b_is_new_data
 
 
-def operator_parser_fip_ranking_files_gcs2gcs(
+def operator_parser_ranking_fip_files_gcs2gcs(
     gcp_project_id: str,
     gcp_conn_id: str,
     gcs_src_bucket: str,
@@ -140,8 +140,8 @@ def operator_parser_fip_ranking_files_gcs2gcs(
         lines = text.split("\n")
         lines = [line for line in text.split("\n") if line.strip()]
         # Check if the file can be parsed, if not continue with the next one
-        l_header = format_fip_ranking_header(lines[0])
-        pattern = get_fip_ranking_pattern(l_header)
+        l_header = format_ranking_fip_header(lines[0])
+        pattern = get_ranking_fip_pattern(l_header)
         if not pattern:
             logger.error(f"Error header Not Controlled for File: {f_blob}")
             continue

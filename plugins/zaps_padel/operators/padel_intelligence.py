@@ -12,6 +12,8 @@ from zaps_core.clients.firestore_client import FirestoreClient
 from zaps_core.clients.gcs_client import GCSClient
 from zaps_core.clients.http_client import HttpClient
 
+from plugins.zaps_padel.utils.utils_pyarrow import get_pyarrow_schema
+
 logger = logging.getLogger(__name__)
 
 
@@ -54,7 +56,8 @@ def manage_stats_requests(
         else:
             url = f'https://realtime.padelintelligence.live/live/score/{str(id)}'
         with HttpClient(url).get_data(
-            stream=True
+            stream=True,
+            timeout=10
         ) as r_response:
             # Open stream sesion get first line, parsed data and close
             for line in r_response.iter_lines():
@@ -124,7 +127,11 @@ def operator_pi_get_match_list2gcs(
             if l_filter_data:
                 # Convert JSON to Arrow Table
                 s_local_file = f'{datetime.now().strftime("%Y%m%d_%H%M%S")}_size_{d_params["size"]}_page_{d_params["page"]}.parquet'
-                pa_table = pa.Table.from_pylist(l_filter_data)
+                # Get pyarrow schema and create parquet file
+                pa_schema = get_pyarrow_schema(
+                    'padel_intelligence_schemas', 'matches_list')
+                pa_table = pa.Table.from_pylist(
+                    l_filter_data, schema=pa_schema)
                 pq.write_table(pa_table, f'/tmp/{s_local_file}')
 
                 # Upload the file to the destination bucket
@@ -165,7 +172,6 @@ def operator_pi_get_match_stats2gcs(
     :param gcp_conn_id: Airflow connection ID to connect to GCP
     :param gcs_bucket: Target GCS bucket
     :param stats_type: Stats type to get info of any match
-
     """
     # Create unique bucket by environment
     gcs_bucket = f'{gcp_project_id.split("-")[0]}_{gcs_bucket}'
@@ -199,14 +205,27 @@ def operator_pi_get_match_stats2gcs(
                 if e.response.status_code == 404:
                     logger.warning(
                         f'There are not more data for this match: {id}')
-                    break
+                elif e.response.status_code == 504:
+                    logger.error(
+                        f'Problems to get connection against match: {id}'
+                    )
+                    continue
                 else:
                     raise e
+            except requests.exceptions.ReadTimeout:
+                logger.error(
+                    f'Problems to get connection against match: {id}'
+                )
+                continue
+
             # Load to GCS if there are stats
             if l_stats_info:
                 # Convert JSON to Arrow Table
                 s_local_file = f'{datetime.now().strftime("%Y%m%d_%H%M%S")}_match_{id}_{stats_type or "resume"}.parquet'
-                pa_table = pa.Table.from_pylist(l_stats_info)
+                # Get pyarrow schema and create parquet file
+                pa_schema = get_pyarrow_schema(
+                    'padel_intelligence_schemas', f'matches_stats_{stats_type or "resume"}')
+                pa_table = pa.Table.from_pylist(l_stats_info, schema=pa_schema)
                 pq.write_table(pa_table, f'/tmp/{s_local_file}')
                 # Upload the file to the destination bucket
                 client_gcs = GCSClient(gcp_project_id, gcp_conn_id)
