@@ -205,6 +205,7 @@ def operator_pi_get_match_stats2gcs(
                 if e.response.status_code == 404:
                     logger.warning(
                         f'There are not more data for this match: {id}')
+                    l_stats_info = []
                 elif e.response.status_code == 504:
                     logger.error(
                         f'Problems to get connection against match: {id}'

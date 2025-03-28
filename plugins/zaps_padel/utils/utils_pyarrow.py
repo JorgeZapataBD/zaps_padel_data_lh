@@ -84,6 +84,6 @@ def get_pyarrow_schema(catalog: str, schema_name: str) -> pa.Schema:
     module_name = f'plugins.zaps_padel.catalogs.{catalog}'
     module = importlib.import_module(module_name)
     d_schema = getattr(module, schema_name)
-    # Conver schema to pyarrow object
+    # Convert schema to pyarrow object
     pa_schema = dict_to_schema(d_schema)
     return pa_schema
