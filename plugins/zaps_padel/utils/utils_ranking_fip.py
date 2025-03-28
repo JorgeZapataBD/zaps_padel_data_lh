@@ -9,7 +9,7 @@ from zaps_core.clients.http_client import HttpClient
 logger = logging.getLogger(__name__)
 
 
-def download_fip_ranking_file(
+def download_ranking_fip_file(
     date: date,
     fip_category: Literal["Male", "Female", 'Race-Male', 'Race-Female']
 ) -> str:
@@ -53,7 +53,7 @@ def get_mondays_list(init_date: date) -> list:
     return dates_monday
 
 
-def format_fip_ranking_header(s_header: str) -> list:
+def format_ranking_fip_header(s_header: str) -> list:
     """
     Function that formats the headers of different files.
     This normalization will be used to parse the content of the PDFs later.
@@ -82,7 +82,7 @@ def format_fip_ranking_header(s_header: str) -> list:
     return l_header
 
 
-def get_fip_ranking_pattern(l_header: list) -> re.Pattern:
+def get_ranking_fip_pattern(l_header: list) -> re.Pattern:
     """
     Function that selects the regular expression to use depending on the file's headers.
     This will capture the fields we need from the text using regular expressions.
