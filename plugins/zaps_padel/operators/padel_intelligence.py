@@ -41,9 +41,17 @@ def manage_stats_requests(
     if stats_type == 'sets':
         l_stats_info = []
         for set_id in ['1', '2', '3']:
-            r_response = HttpClient(f"{Variable.get('ZAPS_PADEL_INTELLIGENCE_BASE_URL')}/match/stats/{str(id)}/{set_id}").get_data(
-                auth=PadelIntelligenceAuth(),
-            )
+            try:
+                r_response = HttpClient(f"{Variable.get('ZAPS_PADEL_INTELLIGENCE_BASE_URL')}/match/stats/{str(id)}/{set_id}").get_data(
+                    auth=PadelIntelligenceAuth(),
+                )
+            except requests.exceptions.HTTPError as e:
+                if e.response.status_code == 404:
+                    logger.warning(
+                        f'There are not more data for this match: {id}')
+                    return l_stats_info
+                else:
+                    raise e
             try:
                 data = json.loads(r_response.text)
                 l_stats_info.append(data)
@@ -199,13 +207,13 @@ def operator_pi_get_match_stats2gcs(
     l_stats_type_ids = d_stats_type['ids']
     if l_matches_ids:
         for id in l_matches_ids:
+            l_stats_info = []
             try:
                 l_stats_info = manage_stats_requests(id, stats_type)
             except requests.exceptions.HTTPError as e:
                 if e.response.status_code == 404:
                     logger.warning(
                         f'There are not more data for this match: {id}')
-                    l_stats_info = []
                 elif e.response.status_code == 504:
                     logger.error(
                         f'Problems to get connection against match: {id}'
