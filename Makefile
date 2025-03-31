@@ -42,6 +42,8 @@ install:
 		python3.11 -m venv .venv && \
 		echo "Entorno virtual creado."; \
 		. .venv/bin/activate && \
+		pip3 install apache-airflow==2.10.4 && \
+		pip3 install apache-airflow-providers-google==11.0.0 && \
 		pip3 install -r requirements.txt && \
 		pip3 install pre-commit && \
 		pre-commit install; \
