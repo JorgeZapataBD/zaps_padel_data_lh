@@ -13,7 +13,7 @@ dbt_dir = f'{airflow_home_path}/dbt/{Variable.get("ZAPS_PADEL_DBT_PROFILE")}'
 
 
 @dag(
-    dag_id='esios_pi_models',
+    dag_id='padel_pi_models',
     schedule_interval=None,
     start_date=days_ago(1),
     catchup=False,
@@ -21,7 +21,7 @@ dbt_dir = f'{airflow_home_path}/dbt/{Variable.get("ZAPS_PADEL_DBT_PROFILE")}'
     max_active_runs=1,
     tags=['padel', 'intelligence', 'dbt']
 )
-def esios_indicators_models():
+def padel_pi_models():
     # Tarea para ejecutar dbt test
     @task.bash(on_failure_callback=errors_notification_telegram)
     def run_pi_models():
@@ -37,4 +37,4 @@ def esios_indicators_models():
     run_pi_models()
 
 
-esios_indicators_models = esios_indicators_models()
+padel_pi_models = padel_pi_models()
