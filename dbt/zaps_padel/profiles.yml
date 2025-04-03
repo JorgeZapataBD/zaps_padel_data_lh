@@ -1,0 +1,37 @@
+zaps_padel:
+  outputs:
+    staging:
+      dataset: '{{ env_var("AIRFLOW_VAR_BIGQUERY_STAGING_DATASET_ID")}}'
+      job_execution_timeout_seconds: 600
+      job_retries: 3
+      keyfile: '{{ env_var("AIRFLOW_VAR_ZAPS_PADEL_GCP_CREDENTIALS_PATH")}}'
+      location: europe-west1
+      method: service-account
+      priority: interactive
+      project: '{{ env_var("AIRFLOW_VAR_ZAPS_PADEL_GCP_PROJECT_ID")}}'
+      threads: 8
+      type: bigquery
+    intermediates:
+      dataset: '{{ env_var("AIRFLOW_VAR_BIGQUERY_INTERMEDIATES_DATASET_ID")}}'
+      job_execution_timeout_seconds: 600
+      job_retries: 3
+      keyfile: '{{ env_var("AIRFLOW_VAR_ZAPS_PADEL_GCP_CREDENTIALS_PATH")}}'
+      location: europe-west1
+      method: service-account
+      priority: interactive
+      project: '{{ env_var("AIRFLOW_VAR_ZAPS_PADEL_GCP_PROJECT_ID")}}'
+      threads: 8
+      type: bigquery
+    marts:
+      dataset: '{{ env_var("AIRFLOW_VAR_BIGQUERY_MARTS_DATASET_ID")}}'
+      job_execution_timeout_seconds: 600
+      job_retries: 3
+      keyfile: '{{ env_var("AIRFLOW_VAR_ZAPS_PADEL_GCP_CREDENTIALS_PATH")}}'
+      location: europe-west1
+      method: service-account
+      priority: interactive
+      project: '{{ env_var("AIRFLOW_VAR_ZAPS_PADEL_GCP_PROJECT_ID")}}'
+      threads: 8
+      type: bigquery
+
+  target: '{{ env_var("AIRFLOW_VAR_BIGQUERY_INTERMEDIATES_DATASET_ID")}}'
