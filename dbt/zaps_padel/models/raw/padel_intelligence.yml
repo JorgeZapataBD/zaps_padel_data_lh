@@ -1,0 +1,34 @@
+version: 2
+
+sources:
+  - name: padel_intelligence
+    schema: raw
+    tables: 
+      - name: 'raw_pi_matches_list'
+        description: |
+          This table stores metadata for professional padel matches obtained from the Padel Intelligence API. 
+          It includes key details about each match, such as date, tournament, round, participating players or teams.
+      - name: 'raw_pi_matches_stats_lastpoints'
+        description: |
+          This table stores detailed statistics of the last points played in a professional padel match, as retrieved from the Padel Intelligence Stream API. 
+          It provides insights into how the final moments of the match unfolded, including point-by-point outcomes.
+      - name: 'raw_pi_matches_stats_player'
+        description: |
+          This table stores detailed statistics of individual player performances throughout a professional padel match, 
+          as retrieved from the Padel Intelligence Stream API. It includes key performance indicators such as winners, 
+          unforced errors, serve efficiency, and net play. The data helps analyze player strengths, weaknesses, and overall match contributions.
+      - name: 'raw_pi_matches_stats_resume'
+        description: |
+          This table provides a high-level summary of professional padel matches, as retrieved from the Padel Stream Intelligence API. 
+          It includes key match outcomes such as the final score, winning team, total duration, and key performance statistics. 
+          This table is useful for quickly assessing match results without analyzing detailed point-by-point data.
+      - name: 'raw_pi_matches_stats_sets'
+        description: |
+          This table provides a breakdown of match statistics at the set level, including individual player performance and team performance.
+          Retrieved from the Padel Intelligence API, it helps analyze set-by-set dynamics, player contributions, and key turning points within a match.
+      - name: 'raw_pi_matches_stats_team'
+        description: |
+          This table stores detailed statistics of team performances throughout a professional padel match, 
+          as retrieved from the Padel Intelligence Stream API. It includes key performance indicators such as winners, 
+          unforced errors, serve efficiency, and net play. The data helps analyze player strengths, weaknesses, and overall match contributions.
+

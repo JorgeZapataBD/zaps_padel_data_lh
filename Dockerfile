@@ -33,4 +33,4 @@ ARG ZAPS_CORE_ENVIRONMENT=main
 ENV ZAPS_CORE_ENVIRONMENT=$ZAPS_CORE_ENVIRONMENT
 RUN pip3 install --no-cache-dir -r /requirements.txt
 # Install dbt dependencies
-#RUN cd /opt/airflow/dbt/zaps_padel && dbt --no-version-check deps
+RUN cd /opt/airflow/dbt/zaps_padel && dbt --no-version-check deps
