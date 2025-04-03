@@ -31,4 +31,3 @@ sources:
           This table stores detailed statistics of team performances throughout a professional padel match, 
           as retrieved from the Padel Intelligence Stream API. It includes key performance indicators such as winners, 
           unforced errors, serve efficiency, and net play. The data helps analyze player strengths, weaknesses, and overall match contributions.
-
