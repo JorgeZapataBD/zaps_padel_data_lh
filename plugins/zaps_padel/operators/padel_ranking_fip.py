@@ -11,7 +11,7 @@ from zaps_core.clients.firestore_client import FirestoreClient
 from zaps_core.clients.gcs_client import GCSClient
 
 from plugins.zaps_padel.utils.utils_ranking_fip import (
-    download_ranking_fip_file, format_ranking_fip_header, get_mondays_list,
+    download_ranking_fip_file, format_ranking_fip_header, get_dates_list,
     get_ranking_fip_pattern)
 
 logger = logging.getLogger(__name__)
@@ -52,21 +52,36 @@ def operator_get_ranking_fip_files2gcs(
             last_date['last_date'], '%Y-%m-%d').date()
 
     # Get all Mondays from the given date to check if there are files for those weeks
-    dates_list = get_mondays_list(init_date)
+    dates_list = get_dates_list(init_date)
     if dates_list:
         for d_date in dates_list:
-            # If no file is found for a date, continue and mark the date (not all weeks update the ranking)
-            try:
-                source_file = download_ranking_fip_file(d_date, fip_category)
-            except requests.exceptions.HTTPError as e:
-                if e.response.status_code == 404:
-                    logger.warning(
-                        f"No Ranking update for the date: {d_date.strftime('%Y-%m-%d')}")
-                    continue
-                else:
+            # If no file is found for a date, continue with next_date
+            l_filename_options = [
+                f"Ranking-{fip_category}-{d_date.strftime('%d-%m-%Y')}.pdf",
+                f"Ranking-{fip_category}-{d_date.strftime('%d-%m-%y')}.pdf",
+                f"Ranking-{fip_category}-Master-{d_date.strftime('%d-%m-%Y')}.pdf",
+                f"Ranking-{fip_category}-Master-{d_date.strftime('%d-%m-%y')}.pdf",
+                f"{fip_category.lower()}-{d_date.strftime('%d-%m-%Y')}.pdf",
+                f"{fip_category.lower()}-{d_date.strftime('%d-%m-%y')}.pdf",
+            ]
+            for filename in l_filename_options:
+                try:
+                    source_file = download_ranking_fip_file(d_date, filename)
+                    break
+                except requests.exceptions.HTTPError as e:
+                    if e.response.status_code == 404:
+                        logger.warning(
+                            f"No Ranking update for the date: {d_date.strftime('%Y-%m-%d')} in format {filename}")
+                        continue
+                    else:
+                        raise e
+                except Exception as e:
                     raise e
-            except Exception as e:
-                raise e
+            else:
+                # If there are not files for date pass to the next date
+                logger.info(
+                    f"No file found for {d_date.strftime('%Y-%m-%d')}, moving to next date")
+                continue
 
             # Create the GCS client
             client_gcs = GCSClient(gcp_project_id, gcp_conn_id)
@@ -79,7 +94,7 @@ def operator_get_ranking_fip_files2gcs(
             client_fs.add_or_update_document(
                 collection_name='fip_ranking',
                 doc_id=fip_category,
-                data={"last_date": date.strftime('%Y-%m-%d')}
+                data={"last_date": d_date.strftime('%Y-%m-%d')}
             )
             b_is_new_data = True
     else:

@@ -11,18 +11,17 @@ logger = logging.getLogger(__name__)
 
 def download_ranking_fip_file(
     date: date,
-    fip_category: Literal["Male", "Female", 'Race-Male', 'Race-Female']
+    filename: str,
 ) -> str:
     """
     Function that downloads player ranking files from the official
     International Padel Federation (FIP) website for a given date and category.
 
     :param date: Date for the ranking
-    :param fip_category: FIP category
+    :param filename: Generate filename for any fip category
     :return:  Path of downloaded file
     """
     # Set the URL of the file
-    filename = f"Ranking-{fip_category}-{date.strftime('%d-%m-%Y')}.pdf"
     url = f"{Variable.get('ZAPS_PADEL_FIP_BASE_URL')}/{date.strftime('%Y')}/{date.strftime('%m')}/{filename}"
     # Make the request and save the file to disk
     response = HttpClient(url).get_data()
@@ -33,24 +32,30 @@ def download_ranking_fip_file(
     return source_file
 
 
-def get_mondays_list(init_date: date) -> list:
+def get_dates_list(init_date: date, weekday: Literal[0, 1, 2, 3, 4, 5, 6] | None = None) -> list:
     """
     Function to obtain a list of Mondays' dates starting from a given initial date,
     this is to get the historical files for the FIP Rankings.
 
     :param init_date: Initial date for calculate list of dates
+    :param weekday: Day of week to get list of dates, if None all days are selected
     :return: List of Monday dates
     """
-    # Select the first Monday from the given date
+    # Select first date to init
+    dates = []
     init_date += timedelta(days=1)
-    while init_date.weekday() != 0:
-        init_date += timedelta(days=1)
+    if weekday:
+        while init_date.weekday() != weekday:
+            init_date += timedelta(days=1)
     # Generate the list of Mondays up to today
-    dates_monday = []
-    while init_date <= date.today():
-        dates_monday.append(init_date)
-        init_date += timedelta(days=7)
-    return dates_monday
+        while init_date <= date.today():
+            dates.append(init_date)
+            init_date += timedelta(days=7)
+    else:
+        while init_date <= date.today():
+            dates.append(init_date)
+            init_date += timedelta(days=1)
+    return dates
 
 
 def format_ranking_fip_header(s_header: str) -> list:
