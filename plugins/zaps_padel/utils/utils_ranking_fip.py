@@ -104,6 +104,8 @@ def get_ranking_fip_pattern(l_header: list) -> re.Pattern:
             "pattern": r"(?P<player>.+?)(?:\s(?P<country>[A-Z]{3}))?\s(?:Male|Female)\s(?P<points>\d+)\s?(?P<player_id>[A-Za-z0-9]+)\s(?P<position>\d+)"},
         {"list": ['Player', 'Countries', 'Gender', 'Points', 'Position', 'Move'],
             "pattern": r"(?P<player>.+?)(?:\s(?P<country>[A-Z]{3}))?\s(?:Male|Female)\s(?P<points>\d+)\s(?P<position>\d+)"},
+        {"list": ['Player', 'Countries', 'Gender', 'Points', 'Position'],
+            "pattern": r"(?P<player>.+?)(?:\s(?P<country>[A-Z]{3}))?\s(?:Male|Female)\s(?P<points>\d+)\s(?P<position>\d+)"},
         {"list": ['Position', 'Player', 'Countries', 'Points'],
             "pattern": r"(?P<position>\d+)\s(?P<player>.+?)(?:\s(?P<country>[A-Z]{3}))?\s(?P<points>\d+)"},
         {"list": ['Position', 'Countries', 'Player', 'Points'],
