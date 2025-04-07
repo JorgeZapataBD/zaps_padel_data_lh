@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: padel_fantasy
+    schema: raw
+    tables: 
+      - name: 'raw_pf_seasons_tournaments'
+        description: |
+          This table stores metadata for tournaments of Premier Padel Seasons form 2023.

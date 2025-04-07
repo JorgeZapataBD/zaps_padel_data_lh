@@ -87,3 +87,55 @@ def get_pyarrow_schema(catalog: str, schema_name: str) -> pa.Schema:
     # Convert schema to pyarrow object
     pa_schema = dict_to_schema(d_schema)
     return pa_schema
+
+
+def validate_fields_against_schema(
+    data: list[dict],
+    schema: pa.Schema
+) -> tuple[list[str], list[str]]:
+    """
+    Validates a list of dictionaries against a PyArrow schema.
+    Returns two lists: extra fields and missing fields (with full names, including nested ones).
+    :param data: List of dictionaries with data content
+    :param schema: pyarrow parquet table schema
+    :return tuple(list,list): List of fields extra and missing
+    """
+    def recurse(entry: dict, schema: pa.Schema, path="") -> tuple[list[str], list[str]]:
+        extras = []
+        missing = []
+        schema_fields = {f.name: f for f in schema}
+
+        entry_keys = set(entry.keys())
+        schema_keys = set(schema_fields.keys())
+
+        # Extras
+        for key in entry_keys - schema_keys:
+            extras.append(f"{path}{key}")
+
+        # Missing and recurse
+        for key in schema_keys:
+            field = schema_fields[key]
+            full_key = f"{path}{key}"
+            if key not in entry:
+                missing.append(full_key)
+            else:
+                value = entry[key]
+                if pa.types.is_struct(field.type):
+                    if isinstance(value, dict):
+                        sub_extras, sub_missing = recurse(
+                            value, field.type, path=full_key + ".")
+                        extras.extend(sub_extras)
+                        missing.extend(sub_missing)
+                    elif value is None:
+                        for subfield in field.type:
+                            missing.append(f"{full_key}.{subfield.name}")
+        return extras, missing
+
+    all_extras = []
+    all_missing = []
+    for item in data:
+        extras, missing = recurse(item, schema)
+        all_extras.extend(extras)
+        all_missing.extend(missing)
+
+    return all_extras, all_missing
