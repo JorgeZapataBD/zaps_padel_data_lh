@@ -125,7 +125,6 @@ def operator_parser_ranking_fip_files_gcs2gcs(
     """
     # Create unique bucket by environment
     gcs_src_bucket = f'{gcp_project_id.split("-")[0]}_{gcs_src_bucket}'
-    gcs_dst_bucket = f'{gcp_project_id.split("-")[0]}_{gcs_dst_bucket}'
 
     # Generate a list of files and select only PDFs to avoid folder paths
     client_gcs = GCSClient(gcp_project_id, gcp_conn_id)

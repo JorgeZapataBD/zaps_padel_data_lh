@@ -1,3 +1,4 @@
+import os
 from typing import Literal
 
 from airflow.decorators import dag, task
@@ -7,12 +8,16 @@ from airflow.utils.dates import days_ago
 from airflow.utils.task_group import TaskGroup
 from zaps_core.utils.airflow_notifications_utils import \
     errors_notification_telegram
+from zaps_core.utils.dbt_utils import build_dbt_command
 
 from plugins.zaps_padel.operators.padel_common import \
     operator_create_external_table
 from plugins.zaps_padel.operators.padel_intelligence import (
     operator_pi_get_match_list2gcs, operator_pi_get_match_stats2gcs)
 
+# Load airflow variable home path
+airflow_home_path = os.getenv('AIRFLOW_HOME')
+dbt_dir = f'{airflow_home_path}/dbt/{Variable.get("ZAPS_PADEL_DBT_PROFILE")}'
 # Categories to download
 l_stats_types = ['sets', 'player', 'team', 'lastpoints', None]
 
@@ -81,6 +86,19 @@ def padel_intelligence_matches():
 
     dummy_task = EmptyOperator(task_id='not_data')
 
+    @task.bash(on_failure_callback=errors_notification_telegram)
+    def run_pf_models():
+        dbt_kwargs = {
+            'project-dir': dbt_dir,
+            'profiles-dir': dbt_dir,
+            'profile': Variable.get('ZAPS_PADEL_DBT_PROFILE'),
+            'select': ['staging.pi', 'intermediates.pi']
+        }
+        return build_dbt_command(
+            'run',
+            **dbt_kwargs
+        )
+
     with TaskGroup("matches_stats") as matches_stats:
         # Match list table
         create_match_list_bq_table()
@@ -95,6 +113,7 @@ def padel_intelligence_matches():
             task_stats2gcs >> task_stats_bq_table
     get_matches_list2gcs_task = get_matches_list2gcs()
     get_matches_list2gcs_task >> [matches_stats, dummy_task]
+    matches_stats >> run_pf_models()
 
 
 padel_intelligence_matches = padel_intelligence_matches()
