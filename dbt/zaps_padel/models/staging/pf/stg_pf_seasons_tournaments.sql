@@ -15,17 +15,19 @@
 SELECT
     date AS created_at, 
     id,
-    name,
-    location,
-    country,
-    level,
+    EXTRACT(YEAR FROM SAFE.PARSE_DATE('%Y-%m-%d', start_date)) AS season_id,
+    TRANSLATE(UPPER(name), 'ÁÉÍÓÚÑ', 'AEIOUN') AS name,
+    TRANSLATE(UPPER(location), 'ÁÉÍÓÚÑ', 'AEIOUN') AS location,
+    country AS country_id,
+    UPPER(level) AS level,
     SAFE.PARSE_DATE('%Y-%m-%d', start_date) AS start_date,
     SAFE.PARSE_DATE('%Y-%m-%d', end_date) AS end_date
 FROM 
     {{ source('padel_fantasy','raw_pf_seasons_tournaments') }}
 WHERE 
+  SAFE.PARSE_DATE('%Y-%m-%d', start_date) >= '2024-01-01'
   {% if is_incremental() %}
-    date > '{{ max_created_at }}'
+    AND date > '{{ max_created_at }}'
   {% else %}
-    date >= '2025-01-01'
+    AND date >= '2025-01-01'
   {% endif %}
